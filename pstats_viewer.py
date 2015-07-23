@@ -3,6 +3,7 @@
 from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
 from StringIO import StringIO
 
+import math
 import os.path
 import pstats
 import sys
@@ -26,8 +27,18 @@ def formatfunc(func):
     containing_dir = os.path.basename(os.path.dirname(file).rstrip('/'))
     return '%s:%s:%s' % (os.path.join(containing_dir, os.path.basename(file)), line, htmlquote(shrink(func_name)))
 
+TIMES = ['s', 'ms', 'us', 'ns', 'ps', 'fs', 'as', 'zs', 'ys']
 def formatTime(dt):
-    return '%.2fs' % dt
+    idx = 0
+    if dt > 0:
+        idx = int(math.floor(math.log10(dt))) // 3
+        if idx >= 0:
+            idx = 0
+        else:
+            idx = -idx
+            dt *= (1000**idx)
+
+    return ('% 9.2f %-2s' % (dt, TIMES[idx])).replace(' ', '&nbsp;')
 
 def formatTimeAndPercent(dt, total):
     percent = "(%.1f%%)" % (100.0 * dt / total)
