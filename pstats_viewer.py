@@ -261,7 +261,7 @@ class MyHandler(BaseHTTPRequestHandler):
 </table>
 </body>
 </html>
-''' % (formatfunc(func), f_cc, f_nc, f_tt, f_ct, callersTable, calleesTable)
+''' % (formatfunc(func), f_cc, f_nc, formatTime(f_tt), formatTime(f_ct), callersTable, calleesTable)
 
         print >> self.wfile, page
 
