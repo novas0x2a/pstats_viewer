@@ -4,7 +4,6 @@ from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
 from StringIO import StringIO
 
 import math
-import os.path
 import pstats
 import sys
 import re
@@ -24,8 +23,7 @@ def shrink(s):
 
 def formatfunc(func):
     file, line, func_name = func
-    containing_dir = os.path.basename(os.path.dirname(file).rstrip('/'))
-    return '%s:%s:%s' % (os.path.join(containing_dir, os.path.basename(file)), line, htmlquote(shrink(func_name)))
+    return '%s:%s:%s' % (file, line, htmlquote(shrink(func_name)))
 
 TIMES = ['s', 'ms', 'us', 'ns', 'ps', 'fs', 'as', 'zs', 'ys']
 def formatTime(dt):
