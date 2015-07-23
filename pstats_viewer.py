@@ -22,8 +22,8 @@ def shrink(s):
     return s[:20] + '...' + s[-20:]
 
 def formatfunc(func):
-    file, line, func_name = func
-    return '%s:%s:%s' % (file, line, htmlquote(shrink(func_name)))
+    fn, line, func_name = func
+    return '%s:%s:%s' % (fn, line, htmlquote(shrink(func_name)))
 
 TIMES = ['s', 'ms', 'us', 'ns', 'ps', 'fs', 'as', 'zs', 'ys',  '']
 COLOR = [  0,   30,   60,   90,  120,  120,  120,  120,  120, 120]
@@ -62,6 +62,8 @@ class MyHandler(BaseHTTPRequestHandler):
 
         self.func_to_id = {}
         self.id_to_func = {}
+        self.query      = None
+        self.wfile      = None
 
         i = 0
         for func in self.print_list:
@@ -85,7 +87,7 @@ class MyHandler(BaseHTTPRequestHandler):
             if method.__doc__ is None:
                 continue
             if method.__doc__.startswith('handle:'):
-                handle, path_re = method.__doc__.split(':')
+                _handle, path_re = method.__doc__.split(':')
                 path_re = path_re.strip()
                 mo = re.match(path_re, path)
                 if mo is None:
@@ -137,13 +139,13 @@ class MyHandler(BaseHTTPRequestHandler):
             if sort_index == 4:
                 self.print_list.sort(
                     key=lambda func: (self.stats.stats[func][2] /
-                                 self.stats.stats[func][0]),
+                                      self.stats.stats[func][0]),
                     reverse=True
                 )
             elif sort_index == 5:
                 self.print_list.sort(
                     key=lambda func: (self.stats.stats[func][3] /
-                                 self.stats.stats[func][0]),
+                                      self.stats.stats[func][0]),
                     reverse=True
                 )
         else:
@@ -152,8 +154,7 @@ class MyHandler(BaseHTTPRequestHandler):
                 reverse=True)
 
         for func in self.print_list:
-            file, line, func_name = func
-            primitive_calls, total_calls, exclusive_time, inclusive_time, callers = self.stats.stats[func]
+            primitive_calls, total_calls, exclusive_time, inclusive_time, _callers = self.stats.stats[func]
 
             row = wrapTag('tr', ''.join(wrapTag('td', cell) for cell in (
                 self.getFunctionLink(func),
@@ -194,9 +195,9 @@ class MyHandler(BaseHTTPRequestHandler):
 ''' % (self.filename, formatTime(self.total_time), '\n'.join(table))
         self.wfile.write(data)
 
-    def func(self, id):
+    def func(self, fid):
         'handle: /func/(.*)$'
-        func_id = int(id)
+        func_id = int(fid)
         func = self.id_to_func[func_id]
 
         f_cc, f_nc, f_tt, f_ct, callers = self.stats.stats[func]
@@ -204,20 +205,22 @@ class MyHandler(BaseHTTPRequestHandler):
 
         def sortedByInclusive(items):
             sortable = [(ct, (f, (cc, nc, tt, ct))) for f, (cc, nc, tt, ct) in items]
-            return [y for x, y in reversed(sorted(sortable))]
+            return [y for _x, y in reversed(sorted(sortable))]
 
         def buildFunctionTable(items):
             callersTable = []
             for caller, (cc, nc, tt, ct) in sortedByInclusive(items):
-                callersTable.append(wrapTag('tr', ''.join(wrapTag('td', cell)
-                                                          for cell in (
-                    self.getFunctionLink(caller),
-                    formatTimeAndPercent(tt, self.total_time),
-                    formatTimeAndPercent(ct, self.total_time),
-                    cc,
-                    nc,
-                    formatTime(tt / cc),
-                    formatTime(ct / cc)))))
+                callersTable.append(wrapTag(
+                    'tr',
+                    ''.join(wrapTag('td', cell)
+                            for cell in (
+                                self.getFunctionLink(caller),
+                                formatTimeAndPercent(tt, self.total_time),
+                                formatTimeAndPercent(ct, self.total_time),
+                                cc,
+                                nc,
+                                formatTime(tt / cc),
+                                formatTime(ct / cc)))))
             return '\n'.join(callersTable)
 
         caller_stats = [(c, self.stats.stats[c][:4]) for c in callers]
