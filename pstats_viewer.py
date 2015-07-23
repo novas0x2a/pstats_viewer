@@ -170,7 +170,7 @@ class MyHandler(BaseHTTPRequestHandler):
 <style>
 </style>
 </head>
-<body>
+<body style='font-family: monospace'>
 <h1>%s</h1>
 <ul>
 <li>Total time: %s</li>
@@ -224,7 +224,7 @@ class MyHandler(BaseHTTPRequestHandler):
 
         page = '''\
 <html>
-<body>
+<body style='font-family: monospace'>
 <a href="/">Index</a>
 <h1>%s</h1>
 <ul>
