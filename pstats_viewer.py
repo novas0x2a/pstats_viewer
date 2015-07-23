@@ -25,10 +25,13 @@ def formatfunc(func):
     file, line, func_name = func
     return '%s:%s:%s' % (file, line, htmlquote(shrink(func_name)))
 
-TIMES = ['s', 'ms', 'us', 'ns', 'ps', 'fs', 'as', 'zs', 'ys']
+TIMES = ['s', 'ms', 'us', 'ns', 'ps', 'fs', 'as', 'zs', 'ys',  '']
+COLOR = [  0,   30,   60,   90,  120,  120,  120,  120,  120, 120]
 def formatTime(dt):
     idx = 0
-    if dt > 0:
+    if dt == 0:
+        idx = len(TIMES) - 1
+    else:
         idx = int(math.floor(math.log10(dt))) // 3
         if idx >= 0:
             idx = 0
@@ -36,7 +39,8 @@ def formatTime(dt):
             idx = -idx
             dt *= (1000**idx)
 
-    return ('% 9.2f %-2s' % (dt, TIMES[idx])).replace(' ', '&nbsp;')
+    t = ('% 9.2f %-2s' % (dt, TIMES[idx])).replace(' ', '&nbsp;')
+    return '<span style="background-color:hsl(%d,100%%,50%%)">%s</span>' % (COLOR[idx], t)
 
 def formatTimeAndPercent(dt, total):
     percent = "(%.1f%%)" % (100.0 * dt / total)
